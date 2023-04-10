@@ -34,18 +34,19 @@ class TwitterDataAgg:
     def __init__(self):
         from import_and_clean_results import CleanResults
         self.df = CleanResults().df        
-        self.stats_data = TwitterDataAgg._groupby_id_time_stats(self.df)
+        self.stats_data = TwitterDataAgg._groupby_time_stats(self.df)
 
 
     @staticmethod
-    def _groupby_id_time_stats(df: pd.DataFrame):
-        return df[
-            ['replies', 'retweets', 'quotes', 'likes', 'fullname']
-        ].copy().loc[
+    def _groupby_time_stats(df: pd.DataFrame):
+        return df.loc[
             ~df['fullname'].str.contains('Let MO Play')
+        ].copy()[
+            ['time', 'replies', 'retweets', 'quotes', 'likes']
         ].groupby(
-            ['fullname'],
+            ['time'],
         ).sum()
+    
     
 if __name__ == '__main__':
     pass

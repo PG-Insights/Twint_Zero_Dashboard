@@ -27,11 +27,11 @@ class CleanResults:
 
     main_dir = HELPERS_DIR.parent
     twint_api_dir = Path(
-        main_dir, 
+        main_dir,
         'Twint_API'
     )
     twint_responses_dir = Path(
-        twint_api_dir, 
+        twint_api_dir,
         'twint-responses'
     )
 
@@ -40,7 +40,8 @@ class CleanResults:
         temp_df = CleanResults._read_csv_and_combine(list_of_files)
         temp_df = CleanResults._expand_stats_col(temp_df)
         self.df = CleanResults._time_col_timestamp_type(temp_df)
-        
+        self._insert_time_col()
+
         CleanResults.save_results(self.df)
 
     @classmethod
@@ -73,20 +74,20 @@ class CleanResults:
             return pd.read_csv(
                 str(file),
                 usecols=[
-                    'id', 
-                    'url', 
-                    'text', 
-                    'username', 
+                    'id',
+                    'url',
+                    'text',
+                    'username',
                     'fullname',
-                    'timestamp', 
-                    'attachments', 
+                    'timestamp',
+                    'attachments',
                     'stats'
                 ],
                 dtype={
                     'id': str,
-                    'url': str, 
-                    'text': str, 
-                    'username': str, 
+                    'url': str,
+                    'text': str,
+                    'username': str,
                     'fullname': str,
                 },
                 parse_dates=['timestamp']
@@ -109,24 +110,26 @@ class CleanResults:
             d = ast.literal_eval(s)
             df = pd.DataFrame([d])
             return df
-        
+
         temp_1 = pd.DataFrame()
-        for row in df['stats'].values: 
+        for row in df['stats'].values:
             temp_1 = pd.concat(
-                [temp_1, string_to_dataframe(row)], 
+                [temp_1, string_to_dataframe(row)],
                 axis=0
             )
         temp_data = temp_1.reset_index(drop=True)
         temp_2 = df.copy().drop(columns=['stats'])
         return pd.concat(
-            [temp_2, temp_data], 
+            [temp_2, temp_data],
             axis=1,
         )
-        
+
     @staticmethod
-    def _time_col_timestamp_type(df, col_name='timestamp') -> pd.DataFrame:
+    def _time_col_timestamp_type(
+            df: pd.DataFrame,
+            col_name='timestamp') -> pd.DataFrame:
         from datetime import datetime
-        # Function to parse the datetime string into a Pandas Timestamp object
+        
         def parse_datetime_string(datetime_string):
             dt = datetime.strptime(datetime_string, "%b %d, %Y · %I:%M %p %Z")
             return pd.Timestamp(dt)
@@ -136,7 +139,20 @@ class CleanResults:
         else:
             df = df.applymap(parse_datetime_string)
         return df
-            
+
+    @staticmethod
+    def _get_hour_col_from_timestamp(
+            df: pd.DataFrame,
+            dt_col='timestamp') -> pd.Series:
+        return df[dt_col].copy().apply(lambda x: x.time())
+    
+    def _insert_time_col(self) -> None:
+        self.df.insert(
+            len(self.df.columns),
+            'time',
+            CleanResults._get_hour_col_from_timestamp(self.df)
+        )
+
     @classmethod
     def save_results(cls, df: pd.DataFrame) -> None:
         """
