@@ -37,7 +37,10 @@ class CleanResults:
 
     def __init__(self):
         list_of_files = CleanResults._get_all_response_csv()
-        self.df = CleanResults._read_csv_and_combine(list_of_files)
+        temp_df = CleanResults._read_csv_and_combine(list_of_files)
+        temp_df = CleanResults._expand_stats_col(temp_df)
+        self.df = CleanResults._time_col_timestamp_type(temp_df)
+        
         CleanResults.save_results(self.df)
 
     @classmethod
@@ -79,6 +82,13 @@ class CleanResults:
                     'attachments', 
                     'stats'
                 ],
+                dtype={
+                    'id': str,
+                    'url': str, 
+                    'text': str, 
+                    'username': str, 
+                    'fullname': str,
+                },
                 parse_dates=['timestamp']
             )
 
@@ -91,6 +101,42 @@ class CleanResults:
             drop=True,
         )
 
+    @staticmethod
+    def _expand_stats_col(df: pd.DataFrame) -> pd.DataFrame:
+        import ast
+
+        def string_to_dataframe(s):
+            d = ast.literal_eval(s)
+            df = pd.DataFrame([d])
+            return df
+        
+        temp_1 = pd.DataFrame()
+        for row in df['stats'].values: 
+            temp_1 = pd.concat(
+                [temp_1, string_to_dataframe(row)], 
+                axis=0
+            )
+        temp_data = temp_1.reset_index(drop=True)
+        temp_2 = df.copy().drop(columns=['stats'])
+        return pd.concat(
+            [temp_2, temp_data], 
+            axis=1,
+        )
+        
+    @staticmethod
+    def _time_col_timestamp_type(df, col_name='timestamp') -> pd.DataFrame:
+        from datetime import datetime
+        # Function to parse the datetime string into a Pandas Timestamp object
+        def parse_datetime_string(datetime_string):
+            dt = datetime.strptime(datetime_string, "%b %d, %Y · %I:%M %p %Z")
+            return pd.Timestamp(dt)
+
+        if col_name:
+            df[col_name] = df[col_name].apply(parse_datetime_string)
+        else:
+            df = df.applymap(parse_datetime_string)
+        return df
+            
     @classmethod
     def save_results(cls, df: pd.DataFrame) -> None:
         """
