@@ -33,24 +33,48 @@ class TwitterDataAgg:
     
     def __init__(self):
         from import_and_clean_results import CleanResults
-        self.df = CleanResults().df        
-        self.stats_data = TwitterDataAgg._groupby_time_stats(self.df)
+        self.df = CleanResults().df     
+        self.lmp_tweets = TwitterDataAgg._return_only_lmp_tweets(
+            self.df
+        )
+        self.non_lmp_tweets = TwitterDataAgg._return_non_lmp_tweets(
+            self.df
+        )
+        self.all_stats = TwitterDataAgg._groupby_time_stats(
+            self.df
+        )
+        self.lmp_stats = TwitterDataAgg._groupby_time_stats(
+            self.lmp_tweets
+        )
+        self.non_lmp_stats = TwitterDataAgg._groupby_time_stats(
+            self.non_lmp_tweets
+        )
 
+    @staticmethod
+    def _return_only_lmp_tweets(df: pd.DataFrame) -> None:
+        return df.loc[
+            df['fullname'].str.contains('Let MO Play')
+        ].copy()
+        
+    @staticmethod
+    def _return_non_lmp_tweets(df: pd.DataFrame) -> None:
+        return df.loc[
+            ~df['fullname'].str.contains('Let MO Play')
+        ].copy()
 
     @staticmethod
     def _groupby_time_stats(df: pd.DataFrame):
-        return df.loc[
-            ~df['fullname'].str.contains('Let MO Play')
-        ].copy()[
-            ['time', 'replies', 'retweets', 'quotes', 'likes']
+        return df.copy()[
+            ['date', 'time', 'replies', 'retweets', 'quotes', 'likes']
         ].groupby(
-            ['time'],
+            ['date', 'time'],
+            as_index=False,
         ).sum()
     
     
 if __name__ == '__main__':
-    pass
-
+    obj = TwitterDataAgg()
+    print(obj.stats_data)
 
 
 

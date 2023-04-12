@@ -41,6 +41,7 @@ class CleanResults:
         temp_df = CleanResults._expand_stats_col(temp_df)
         self.df = CleanResults._time_col_timestamp_type(temp_df)
         self._insert_time_col()
+        self._insert_date_col()
 
         CleanResults.save_results(self.df)
 
@@ -144,13 +145,20 @@ class CleanResults:
     def _get_hour_col_from_timestamp(
             df: pd.DataFrame,
             dt_col='timestamp') -> pd.Series:
-        return df[dt_col].copy().apply(lambda x: x.time())
+        return df[dt_col].copy().apply(lambda x: (x.time()).hour)
     
     def _insert_time_col(self) -> None:
         self.df.insert(
             len(self.df.columns),
             'time',
             CleanResults._get_hour_col_from_timestamp(self.df)
+        )
+        
+    def _insert_date_col(self) -> None:
+        self.df.insert(
+            len(self.df.columns),
+            'date',
+            self.df['timestamp'].dt.date.values
         )
 
     @classmethod
