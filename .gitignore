@@ -25,4 +25,6 @@ lib/
 lib64
 lib64/
 twint-responses/
+__pycache__/
+*/__pycache__/
 pyvenv.cfg
