@@ -19,6 +19,8 @@ if str(MAIN_DIR) not in sys.path:
     
 def _get_all_results():
     from __helpers__.aggregate_results import TwitterDataAgg
+    from __helpers__.make_twint_api_call import TwintController 
+    TwintController()
     return TwitterDataAgg()
 
 

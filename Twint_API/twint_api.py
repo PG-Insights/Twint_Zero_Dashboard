@@ -12,6 +12,7 @@ import subprocess
 import pandas as pd
 from os import chdir
 from pathlib import Path
+from datetime import datetime
 
 TWINT_API_DIR = Path(__file__).parent
 
@@ -80,41 +81,45 @@ def parse_json_returned(json_str: str) -> json:
         )
     )
 
+class TwintApi:
+    def __init__(self):
+        parser = argparse.ArgumentParser(
+            description='Run "Twint Zero" API Twitter Query'
+        )
+        parser.add_argument(
+            'query',
+            nargs='?',
+            default='to:LetMOPLay within_time:72h filter:has_engagement lang:en',
+            help='Twitter query string: https://github.com/igorbrigadir/twitter-advanced-search'
+        )
+        args = parser.parse_args()
+        query_str = args.query
+        json_str = return_query_results(
+            query_str,
+        )
+        response_json = parse_json_returned(
+            json_str
+        )
+        df = pd.read_json(
+            response_json,
+            lines=True
+        )
+        response_dir = Path(
+            TWINT_API_DIR,
+            'twint-responses'
+        )
+        response_dir.mkdir(exist_ok=True)
+        save_name = f'{datetime.now()}_{query_str}'
+        df.to_csv(
+            Path(
+                response_dir,
+                f'{save_name}.csv'
+            ),
+            index=False,
+        )
+        print(f'\nExport name: {save_name}\n')
+
 
 if __name__ == '__main__':
-    from datetime import datetime
-    parser = argparse.ArgumentParser(
-        description='Run "Twint Zero" API Twitter Query'
-    )
-    parser.add_argument(
-        'query',
-        nargs='?',
-        default='to:LetMOPLay within_time:72h filter:has_engagement lang:en',
-        help='Twitter query string: https://github.com/igorbrigadir/twitter-advanced-search'
-    )
-    args = parser.parse_args()
-    query_str = args.query
-    json_str = return_query_results(
-        query_str,
-    )
-    response_json = parse_json_returned(
-        json_str
-    )
-    df = pd.read_json(
-        response_json,
-        lines=True
-    )
-    response_dir = Path(
-        TWINT_API_DIR,
-        'twint-responses'
-    )
-    response_dir.mkdir(exist_ok=True)
-    save_name = f'{datetime.now()}_{query_str}'
-    df.to_csv(
-        Path(
-            response_dir,
-            f'{save_name}.csv'
-        ),
-        index=False,
-    )
-    print(f'\nExport name: {save_name}\n')
+    TwintApi()
+    
