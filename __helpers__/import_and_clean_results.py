@@ -42,6 +42,7 @@ class CleanResults:
         self.df = CleanResults._time_col_timestamp_type(temp_df)
         self._insert_time_col()
         self._insert_date_col()
+        self._combine_date_hour_cols()
 
         CleanResults.save_results(self.df)
 
@@ -161,6 +162,21 @@ class CleanResults:
             self.df['timestamp'].dt.date.values
         )
 
+    def _combine_date_hour_cols(self) -> None:
+        self.df.insert(
+            len(self.df.columns),
+            'Date & Hour',
+            [
+                f'{date} {time}' for date, time in 
+                zip(
+                    self.df['date'].values, 
+                    self.df['time'].values
+                )
+            ]
+        )
+        
+        
+    
     @classmethod
     def save_results(cls, df: pd.DataFrame) -> None:
         """

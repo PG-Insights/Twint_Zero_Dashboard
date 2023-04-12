@@ -28,7 +28,7 @@ def main():
     st.header('Twitter Data - Twint_Zero_Dashboard')
     data = _get_all_results()
     st.dataframe(data.df)
-    st.plotly_chart(px.line(data.stats_data))
+    st.plotly_chart(px.line(data.all_stats))
 
 
 if __name__ == '__main__':

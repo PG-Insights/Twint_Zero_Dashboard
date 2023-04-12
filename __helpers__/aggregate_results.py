@@ -65,16 +65,15 @@ class TwitterDataAgg:
     @staticmethod
     def _groupby_time_stats(df: pd.DataFrame):
         return df.copy()[
-            ['date', 'time', 'replies', 'retweets', 'quotes', 'likes']
+            ['Date & Hour', 'replies', 'retweets', 'quotes', 'likes']
         ].groupby(
-            ['date', 'time'],
-            as_index=False,
+            ['Date & Hour'],
         ).sum()
     
     
 if __name__ == '__main__':
     obj = TwitterDataAgg()
-    print(obj.stats_data)
+    print(obj.all_stats)
 
 
 
