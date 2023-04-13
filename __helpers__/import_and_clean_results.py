@@ -165,11 +165,11 @@ class CleanResults:
     def _combine_date_hour_cols(self) -> None:
         self.df.insert(
             len(self.df.columns),
-            'Date & Hour',
+            'Weekday & Hour',
             [
                 f'{date} {time}' for date, time in 
                 zip(
-                    self.df['date'].values, 
+                    self.df['timestamp'].dt.strftime('%A'), 
                     self.df['time'].values
                 )
             ]
