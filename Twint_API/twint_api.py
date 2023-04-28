@@ -51,7 +51,7 @@ def return_query_results(
         '-Query',
         query,
         '-Instance',
-        'birdsite.xanny.family',
+        'nitter.privacydev.net',
         '-Format',
         'json',
     ]
@@ -89,7 +89,7 @@ class TwintApi:
         parser.add_argument(
             'query',
             nargs='?',
-            default='to:LetMOPLay within_time:72h filter:has_engagement lang:en',
+            default='from:LetMOPLay within_time:72h lang:en',
             help='Twitter query string: https://github.com/igorbrigadir/twitter-advanced-search'
         )
         args = parser.parse_args()
@@ -110,14 +110,18 @@ class TwintApi:
         )
         response_dir.mkdir(exist_ok=True)
         save_name = f'{datetime.now()}_{query_str}'
-        df.to_csv(
-            Path(
-                response_dir,
-                f'{save_name}.csv'
-            ),
-            index=False,
-        )
-        print(f'\nExport name: {save_name}\n')
+        try:
+            if len(df.index > 0):
+                df.to_csv(
+                    Path(
+                        response_dir,
+                        f'{save_name}.csv'
+                    ),
+                    index=False,
+                )
+                print(f'\nExport name: {save_name}\n')
+        except:
+            print('\n\nNo results returned, try another query\n\n')
 
 
 if __name__ == '__main__':

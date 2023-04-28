@@ -94,7 +94,6 @@ class CleanResults:
                 },
                 parse_dates=['timestamp']
             )
-
         return pd.concat(
             [_read_csv(file) for file in list_of_paths],
             axis=0,
